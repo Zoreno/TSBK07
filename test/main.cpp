@@ -7,6 +7,8 @@
 #include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 using namespace glm;
 
@@ -162,10 +164,38 @@ int main()
 	glDeleteShader(fragmentShader);
 
 	//============================================================================
+	// Static Uniforms
+	//============================================================================
+
+	//============================================================================
 	// Main Loop
 	//============================================================================
 
+	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
+	GLfloat time;
+
 	do {
+
+		//============================================================================
+		// Dynamic Uniforms
+		//============================================================================
+
+		// Recalculate time
+		time = (GLfloat)glfwGetTime();
+
+		// Transformation matrix. Used by vertex shader.
+		mat4 trans;
+		trans = glm::rotate(trans, radians(time*50.f), glm::vec3(0.0, 0.0, 1.0));
+		trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "transform"), 1, GL_TRUE, value_ptr(trans));
+
+		// Time value. Used by fragment shader.
+		glUniform1f(glGetUniformLocation(shaderProgram, "time"), time);
+
+		// Clear screen
+		glClear(GL_COLOR_BUFFER_BIT);
+
 		// 1rst attribute buffer : vertices
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
