@@ -18,6 +18,12 @@ std::string getStringFromFile(const std::string& path)
 	return std::string{ std::istreambuf_iterator<char>(fileStream), std::istreambuf_iterator<char>() };
 }
 
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
 int main()
 {
 	//============================================================================
@@ -111,6 +117,8 @@ int main()
 	{
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
 		std::cerr << "ERROR: VERTEX SHADER COMPILATION FAULT: " << std::endl << infoLog << std::endl;
+		glfwTerminate();
+		return -1;
 	}
 
 	//============================================================================
@@ -137,6 +145,8 @@ int main()
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
 		std::cerr << "ERROR: FRAGMENT SHADER COMPILATION FAULT: " << std::endl << infoLog << std::endl;
+		glfwTerminate();
+		return -1;
 	}
 
 	//============================================================================
@@ -154,6 +164,8 @@ int main()
 	if (!success) {
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 		std::cerr << "ERROR: SHADER PROGRAM LINKING FAULT: " << std::endl << infoLog << std::endl;
+		glfwTerminate();
+		return -1;
 	}
 
 	// Use our new shader program
@@ -168,15 +180,21 @@ int main()
 	//============================================================================
 
 	//============================================================================
-	// Main Loop
+	// Register Callbacks
+	//============================================================================
+
+	glfwSetKeyCallback(window, key_callback);
+
+	//============================================================================
+	// Final Setup
 	//============================================================================
 
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
 	GLfloat time;
 
-	do {
-
+	while(glfwWindowShouldClose(window) == 0)
+	{
 		//============================================================================
 		// Dynamic Uniforms
 		//============================================================================
@@ -214,11 +232,8 @@ int main()
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-
-	} // Check if the ESC key was pressed or the window was closed
-	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-		glfwWindowShouldClose(window) == 0);
-
+	}
+	
 	glfwTerminate();
 
 	return 0;
