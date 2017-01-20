@@ -76,10 +76,23 @@ int main()
 	glBindVertexArray(VertexArrayID);
 
 	// An array of 3 vectors which represents 3 vertices
-	static const GLfloat g_vertex_buffer_data[] = {
-		-1.0f, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		0.0f,  1.0f, 0.0f,
+	static const GLfloat vertices[] = {
+		0.5f,  0.5f, 0.0f,  // Top Right
+		0.5f, -0.5f, 0.0f,  // Bottom Right
+		-0.5f, -0.5f, 0.0f,  // Bottom Left
+		-0.5f,  0.5f, 0.0f   // Top Left 
+	};
+
+	static const GLfloat colors[] = {
+		1.0f, 0.0f,  0.0f,
+		0.0f, 1.0f,  0.0f,
+		0.0f, 0.0f,  1.0f,
+		1.0f, 0.0f,  1.0f
+	};
+
+	static const GLuint indices[] = {  // Note that we start from 0!
+		0, 1, 3,   // First Triangle
+		1, 2, 3    // Second Triangle
 	};
 
 	// This will identify our vertex buffer
@@ -89,7 +102,42 @@ int main()
 	// The following commands will talk about our 'vertexbuffer' buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	// Give our vertices to OpenGL.
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	// Same thing for index buffer
+	GLuint indexBuffer;
+	glGenBuffers(1, &indexBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	GLuint colorBuffer;
+	glGenBuffers(1, &colorBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+	glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(colors), colors, GL_STATIC_DRAW);
+	
+
+	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+	glVertexAttribPointer(
+		0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+		3,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		3 *sizeof(GLfloat),                  // stride
+		(GLvoid*)0            // array buffer offset
+		);
+
+	glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
+	glVertexAttribPointer(
+		1,                  // attribute 1.
+		3,                  // size
+		GL_FLOAT,           // type
+		GL_FALSE,           // normalized?
+		0,                  // stride
+		(GLvoid*)0            // array buffer offset
+		);
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
 
 	//============================================================================
 	// Vertex Shader
@@ -162,6 +210,10 @@ int main()
 
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
+
+	glBindAttribLocation(shaderProgram, 0, "vertex_position");
+	glBindAttribLocation(shaderProgram, 1, "vertex_color");
+
 	glLinkProgram(shaderProgram);
 
 	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
@@ -199,6 +251,10 @@ int main()
 	GLfloat timeElapsed = 0.f;
 	GLuint frames = 0;
 
+	// Set render wireframe mode
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	while(glfwWindowShouldClose(window) == 0)
 	{
 		//============================================================================
@@ -233,24 +289,17 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// 1rst attribute buffer : vertices
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(
-			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			3* sizeof(GLfloat),                  // stride
-			(GLvoid*)0            // array buffer offset
-			);
+		glBindVertexArray(vertexbuffer);
 		// Draw the triangle !
-		glDrawArrays(GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
-		glDisableVertexAttribArray(0);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
 
 		// Swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+
+	glDeleteVertexArrays(1, &vertexbuffer);
 	
 	glfwTerminate();
 
