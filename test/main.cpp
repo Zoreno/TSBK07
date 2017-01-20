@@ -125,8 +125,10 @@ int main()
 	// Fragment Shader
 	//============================================================================
 
+	typedef GLuint FragmentShader;
+
 	// Fragment Shader ID
-	GLuint fragmentShader;
+	FragmentShader fragmentShader;
 
 	// Create a shader object and save ID
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -152,8 +154,10 @@ int main()
 	//============================================================================
 	// Create and link shader program
 	//============================================================================
+	
+	typedef GLuint ShaderProgram;
 
-	GLuint shaderProgram;
+	ShaderProgram shaderProgram;
 	shaderProgram = glCreateProgram();
 
 	glAttachShader(shaderProgram, vertexShader);
@@ -191,7 +195,9 @@ int main()
 
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
-	GLfloat time;
+	GLfloat time = (GLfloat)glfwGetTime();
+	GLfloat timeElapsed = 0.f;
+	GLuint frames = 0;
 
 	while(glfwWindowShouldClose(window) == 0)
 	{
@@ -199,8 +205,20 @@ int main()
 		// Dynamic Uniforms
 		//============================================================================
 
-		// Recalculate time
+		// Recalculate time and FPS counter
+
+		GLfloat oldTime = time;
 		time = (GLfloat)glfwGetTime();
+		timeElapsed += (time - oldTime);
+		++frames;
+
+		if(timeElapsed > 1.f)
+		{
+			timeElapsed -= 1.f;
+			std::string newTitle = std::to_string(frames) + std::string{ " FPS" };
+			glfwSetWindowTitle(window, newTitle.c_str());
+			frames = 0;
+		}
 
 		// Transformation matrix. Used by vertex shader.
 		mat4 trans;
