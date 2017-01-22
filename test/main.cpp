@@ -280,7 +280,7 @@ int main()
 		mat4 trans;
 		trans = glm::rotate(trans, radians(time*50.f), glm::vec3(0.0, 0.0, 1.0));
 		trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "transform"), 1, GL_TRUE, value_ptr(trans));
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "transform"), 1, GL_FALSE, value_ptr(trans));
 
 		// Time value. Used by fragment shader.
 		glUniform1f(glGetUniformLocation(shaderProgram, "time"), time);
